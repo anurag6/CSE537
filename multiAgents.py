@@ -17,6 +17,7 @@ from game import Directions
 import random, util
 
 from game import Agent
+from game import Actions
 
 class ReflexAgent(Agent):
     """
@@ -42,13 +43,17 @@ class ReflexAgent(Agent):
         legalMoves = gameState.getLegalActions()
 
         # Choose one of the best actions
+        """print ("******New set of posns******")
+        print ("current pos:",gameState.getPacmanPosition())
+        print ("Legal neighbours:", Actions.getLegalNeighbors(gameState.getPacmanPosition(),gameState.getWalls()))"""
         scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
         bestScore = max(scores)
+        #print("best scores available:",bestScore)
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
         chosenIndex = random.choice(bestIndices) # Pick randomly among the best
 
         "Add more of your code here if you want to"
-
+        #print ("Action taken:",legalMoves[chosenIndex])
         return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState, action):
@@ -69,12 +74,38 @@ class ReflexAgent(Agent):
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
-        newFood = successorGameState.getFood()
+        newFood = successorGameState.getFood().asList()
+        if successorGameState.getNumFood() > 0:
+            minFoodDistance = min([manhattanDistance(newPos,pos) for pos in newFood])
+        else:
+            minFoodDistance = 0
+        print("***")
+        print ("New food:",newFood)
+        print ("newPos:", newPos)
+        print ("minFoodDistance:",minFoodDistance)
+        print ("successor has food:", successorGameState.hasFood(newPos[0],newPos[1]))
+        print ("current has food", currentGameState.hasFood(newPos[0],newPos[1]))
         newGhostStates = successorGameState.getGhostStates()
+        newGhostPositions = nextPossibleGhostStates(currentGameState)
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        score = successorGameState.getScore()
+        if newPos in newGhostPositions:
+            score -= 400
+        if currentGameState.hasFood(newPos[0],newPos[1]):
+            score += 100
+        score -= minFoodDistance
+        return score
+
+def nextPossibleGhostStates(currentGameState):
+    result = []
+    for index in range(1,currentGameState.getNumAgents()):
+        ghostState = currentGameState.data.agentStates[index]
+        if ghostState.scaredTimer > 0:
+            continue
+        validPositions=Actions.getLegalNeighbors(ghostState.getPosition(),currentGameState.getWalls())
+        result.extend(validPositions)
+    return result
 
 def scoreEvaluationFunction(currentGameState):
     """
