@@ -79,12 +79,12 @@ class ReflexAgent(Agent):
             minFoodDistance = min([manhattanDistance(newPos,pos) for pos in newFood])
         else:
             minFoodDistance = 0
-        print("***")
+        """print("***")
         print ("New food:",newFood)
         print ("newPos:", newPos)
         print ("minFoodDistance:",minFoodDistance)
         print ("successor has food:", successorGameState.hasFood(newPos[0],newPos[1]))
-        print ("current has food", currentGameState.hasFood(newPos[0],newPos[1]))
+        print ("current has food", currentGameState.hasFood(newPos[0],newPos[1]))"""
         newGhostStates = successorGameState.getGhostStates()
         newGhostPositions = nextPossibleGhostStates(currentGameState)
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
@@ -93,7 +93,7 @@ class ReflexAgent(Agent):
         if newPos in newGhostPositions:
             score -= 400
         if currentGameState.hasFood(newPos[0],newPos[1]):
-            score += 100
+            score += 50
         score -= minFoodDistance
         return score
 
@@ -160,7 +160,38 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        successors = self.getSuccessorsWithValuesAction(gameState,0,0)
+        value = max(successors,key=lambda s: s[0])
+        return value[1]
+
+    def getSuccessorsWithValuesAction(self, gameState, agentId, currDepth):
+        #print("\n***getSuccessorsWithValuesAction***")
+        #print ("agentId:",agentId,"currDepth:", currDepth,"target depth:",self.depth)
+        if agentId == 0:
+         #   print ("pacman")
+            currDepth+=1
+        legalMoves = gameState.getLegalActions(agentId)
+        if (agentId == gameState.getNumAgents()-1) and (currDepth == self.depth):   #if it is the last agent for given depth, dont evaluate expand xuccessors, jsut get scores.
+            successorsValues = [(self.evaluationFunction(gameState.generateSuccessor(agentId,action)),action) for action in legalMoves]
+        else:
+            successors = [[gameState.generateSuccessor(agentId,action),action] for action in legalMoves]
+          #  print ("Successors:",successors)
+            successorsValues = []
+            for successor in successors:
+           #     print ("Successor:",successor)
+                if successor[0].isWin() or successor[0].isLose():   #is a leaf node
+            #        print ("Is a leaf node")
+                    value = self.evaluationFunction(successor[0])
+                else:
+                    if (agentId+1)%successor[0].getNumAgents() == 0:
+             #           print ("Picking max value")
+                        value = max(self.getSuccessorsWithValuesAction(successor[0],(agentId+1)%successor[0].getNumAgents(),currDepth),key=lambda s: s[0])[0]
+                    else:
+              #          print ("Picking min value")
+                        value = min(self.getSuccessorsWithValuesAction(successor[0],(agentId+1)%successor[0].getNumAgents(),currDepth),key=lambda s: s[0])[0]
+                successorsValues.append((value,successor[1]))
+        #print ("successorsValues",successorsValues)
+        return successorsValues
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -172,7 +203,41 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        successors = self.getSuccessorsWithValuesAction(gameState, 0, 0)
+        value = max(successors, key=lambda s: s[0])
+        return value[1]
+
+    def getSuccessorsWithValuesAction(self, gameState, agentId, currDepth,alpha,beta):
+        #print("\n***getSuccessorsWithValuesAction***")
+        #print ("agentId:",agentId,"currDepth:", currDepth,"target depth:",self.depth)
+        if agentId == 0:
+         #   print ("pacman")
+            currDepth+=1
+        legalMoves = gameState.getLegalActions(agentId)
+        if (agentId == gameState.getNumAgents()-1) and (currDepth == self.depth):   #if it is the last agent for given depth, dont evaluate expand xuccessors, jsut get scores.
+            successorsValues = []
+            for action in legalMoves:
+                successorsValues.append((self.evaluationFunction(gameState.generateSuccessor(agentId,action)),action))
+
+        else:
+          #  print ("Successors:",successors)
+            successorsValues = []
+            for action in legalMoves:
+                successor = [gameState.generateSuccessor(agentId,action),action]
+           #     print ("Successor:",successor)
+                if successor[0].isWin() or successor[0].isLose():   #is a leaf node
+            #        print ("Is a leaf node")
+                    value = self.evaluationFunction(successor[0])
+                else:
+                    if (agentId+1)%successor[0].getNumAgents() == 0:
+             #           print ("Picking max value")
+                        value = max(self.getSuccessorsWithValuesAction(successor[0],(agentId+1)%successor[0].getNumAgents(),currDepth),key=lambda s: s[0])[0]
+                    else:
+              #          print ("Picking min value")
+                        value = min(self.getSuccessorsWithValuesAction(successor[0],(agentId+1)%successor[0].getNumAgents(),currDepth),key=lambda s: s[0])[0]
+                successorsValues.append((value,successor[1]))
+        #print ("successorsValues",successorsValues)
+        return successorsValues
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
