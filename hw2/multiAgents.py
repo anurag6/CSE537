@@ -203,40 +203,68 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        successors = self.getSuccessorsWithValuesAction(gameState, 0, 0)
+        successors = self.getSuccessorsWithValuesAction(gameState, 0, 0,float("-inf"),float("inf"))
         value = max(successors, key=lambda s: s[0])
         return value[1]
 
     def getSuccessorsWithValuesAction(self, gameState, agentId, currDepth,alpha,beta):
-        #print("\n***getSuccessorsWithValuesAction***")
-        #print ("agentId:",agentId,"currDepth:", currDepth,"target depth:",self.depth)
+        print("\n***getSuccessorsWithValuesAction***")
+        print ("agentId:",agentId,"currDepth:", currDepth,"target depth:",self.depth,"alpha:",alpha,"beta:",beta)
         if agentId == 0:
-         #   print ("pacman")
+            print ("pacman")
             currDepth+=1
         legalMoves = gameState.getLegalActions(agentId)
         if (agentId == gameState.getNumAgents()-1) and (currDepth == self.depth):   #if it is the last agent for given depth, dont evaluate expand xuccessors, jsut get scores.
             successorsValues = []
             for action in legalMoves:
-                successorsValues.append((self.evaluationFunction(gameState.generateSuccessor(agentId,action)),action))
+                value = (self.evaluationFunction(gameState.generateSuccessor(agentId,action)))
+                successorsValues.append((value,action))
+                if value < beta:
+                    beta = value
+                if alpha > beta:
+                    break
 
         else:
-          #  print ("Successors:",successors)
+            #print ("Successors:",successors)
             successorsValues = []
-            for action in legalMoves:
+            for index,action in enumerate(legalMoves):
                 successor = [gameState.generateSuccessor(agentId,action),action]
-           #     print ("Successor:",successor)
+                print ("Successor:",successor,"currdepth:",currDepth,"index:",index)
                 if successor[0].isWin() or successor[0].isLose():   #is a leaf node
-            #        print ("Is a leaf node")
+                    print ("Is a leaf node")
                     value = self.evaluationFunction(successor[0])
+                    if (agentId) % successor[0].getNumAgents() == 0:
+                        if value > alpha:
+                            alpha = value
+                    else:
+                        if value < beta:
+                            beta = value
                 else:
                     if (agentId+1)%successor[0].getNumAgents() == 0:
-             #           print ("Picking max value")
-                        value = max(self.getSuccessorsWithValuesAction(successor[0],(agentId+1)%successor[0].getNumAgents(),currDepth),key=lambda s: s[0])[0]
+                        print ("next agent is max")
+                        value = max(self.getSuccessorsWithValuesAction(successor[0],(agentId+1)%successor[0].getNumAgents(),currDepth,alpha,beta),key=lambda s: s[0])[0]
+                        print ("Got value for max:",value)
+                        #if value < beta:
+                        #    beta = value
                     else:
-              #          print ("Picking min value")
-                        value = min(self.getSuccessorsWithValuesAction(successor[0],(agentId+1)%successor[0].getNumAgents(),currDepth),key=lambda s: s[0])[0]
+                        print ("nextagent is min")
+                        value = min(self.getSuccessorsWithValuesAction(successor[0],(agentId+1)%successor[0].getNumAgents(),currDepth,alpha,beta),key=lambda s: s[0])[0]
+                        print("Got value for min:",value)
+                        #if value > alpha:
+                        #    alpha = value
+                    if (agentId) % successor[0].getNumAgents() == 0:
+                        if value > alpha:
+                            alpha = value
+                    else:
+                        if value < beta:
+                            beta = value
                 successorsValues.append((value,successor[1]))
-        #print ("successorsValues",successorsValues)
+                print ("For currdepth:",currDepth,"index:",index,"alpha:",alpha,"beta:",beta,"value:",value)
+                if alpha > beta:
+                    print ("pruning")
+                    break
+        print ("successorsValues",successorsValues)
+        print ("***end***\n")
         return successorsValues
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
