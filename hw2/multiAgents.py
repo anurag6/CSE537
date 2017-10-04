@@ -208,10 +208,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return value[1]
 
     def getSuccessorsWithValuesAction(self, gameState, agentId, currDepth,alpha,beta):
-        print("\n***getSuccessorsWithValuesAction***")
-        print ("agentId:",agentId,"currDepth:", currDepth,"target depth:",self.depth,"alpha:",alpha,"beta:",beta)
+        #print("\n***getSuccessorsWithValuesAction***")
+        #print ("agentId:",agentId,"currDepth:", currDepth,"target depth:",self.depth,"alpha:",alpha,"beta:",beta)
         if agentId == 0:
-            print ("pacman")
+            #print ("pacman")
             currDepth+=1
         legalMoves = gameState.getLegalActions(agentId)
         if (agentId == gameState.getNumAgents()-1) and (currDepth == self.depth):   #if it is the last agent for given depth, dont evaluate expand xuccessors, jsut get scores.
@@ -229,9 +229,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             successorsValues = []
             for index,action in enumerate(legalMoves):
                 successor = [gameState.generateSuccessor(agentId,action),action]
-                print ("Successor:",successor,"currdepth:",currDepth,"index:",index)
+                #print ("Successor:",successor,"currdepth:",currDepth,"index:",index)
                 if successor[0].isWin() or successor[0].isLose():   #is a leaf node
-                    print ("Is a leaf node")
+                    #print ("Is a leaf node")
                     value = self.evaluationFunction(successor[0])
                     if (agentId) % successor[0].getNumAgents() == 0:
                         if value > alpha:
@@ -241,15 +241,15 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                             beta = value
                 else:
                     if (agentId+1)%successor[0].getNumAgents() == 0:
-                        print ("next agent is max")
+                        #print ("next agent is max")
                         value = max(self.getSuccessorsWithValuesAction(successor[0],(agentId+1)%successor[0].getNumAgents(),currDepth,alpha,beta),key=lambda s: s[0])[0]
-                        print ("Got value for max:",value)
+                        #print ("Got value for max:",value)
                         #if value < beta:
                         #    beta = value
                     else:
-                        print ("nextagent is min")
+                        #print ("nextagent is min")
                         value = min(self.getSuccessorsWithValuesAction(successor[0],(agentId+1)%successor[0].getNumAgents(),currDepth,alpha,beta),key=lambda s: s[0])[0]
-                        print("Got value for min:",value)
+                        #print("Got value for min:",value)
                         #if value > alpha:
                         #    alpha = value
                     if (agentId) % successor[0].getNumAgents() == 0:
@@ -259,12 +259,12 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                         if value < beta:
                             beta = value
                 successorsValues.append((value,successor[1]))
-                print ("For currdepth:",currDepth,"index:",index,"alpha:",alpha,"beta:",beta,"value:",value)
+                #print ("For currdepth:",currDepth,"index:",index,"alpha:",alpha,"beta:",beta,"value:",value)
                 if alpha > beta:
-                    print ("pruning")
+                 #   print ("pruning")
                     break
-        print ("successorsValues",successorsValues)
-        print ("***end***\n")
+        #print ("successorsValues",successorsValues)
+        #print ("***end***\n")
         return successorsValues
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
